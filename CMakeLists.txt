@@ -20,6 +20,9 @@ project(
   VERSION 0.6.0
   LANGUAGES CXX CUDA)
 
+# Root of this repo; correct when pulled via add_subdirectory from llmOnEdge.
+set(TRT_EDGELLM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "TensorRT-Edge-LLM source root" FORCE)
+
 # Specify the C++ standard and flags
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -35,7 +38,7 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
 
 # Code coverage with gcov (for SonarQube analysis)
 option(ENABLE_COVERAGE "Enable gcov code coverage instrumentation" OFF)
-include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
+include(${TRT_EDGELLM_ROOT}/cmake/CodeCoverage.cmake)
 
 macro(set_ifndef var val)
   if(NOT DEFINED ${var})
@@ -101,7 +104,7 @@ if(ENABLE_NVTX_PROFILING)
   # Use bundled NVTX3 headers (v3.4.0-c-cpp) for consistency across all
   # platforms This ensures profiling support works on all targets
   # (GPU/Thor/Orin) with CUDA 11/12/13
-  set(NVTX_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/3rdParty/NVTX/include/nvtx3")
+  set(NVTX_INCLUDE_DIR "${TRT_EDGELLM_ROOT}/3rdParty/NVTX/include/nvtx3")
 
   if(EXISTS "${NVTX_INCLUDE_DIR}/nvtx3.hpp")
     message(STATUS "NVTX profiling ENABLED: ${NVTX_INCLUDE_DIR}")
@@ -154,10 +157,12 @@ include_directories(SYSTEM ${CUDA_INCLUDE_DIR} ${TRT_INCLUDE_DIR})
 
 set(COMMON_INCLUDE_DIRS
     ${NVTX_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/cpp
-    ${CMAKE_SOURCE_DIR}/examples/multimodal
-    ${CMAKE_SOURCE_DIR}/3rdParty/nlohmannJson/include
-    ${CMAKE_SOURCE_DIR}/3rdParty/stb)
+    ${TRT_EDGELLM_ROOT}/cpp
+    ${TRT_EDGELLM_ROOT}/examples/multimodal
+    ${TRT_EDGELLM_ROOT}/3rdParty/nlohmannJson/include
+    ${TRT_EDGELLM_ROOT}/3rdParty/stb)
+
+set(EDGELLM_COMMON_INCLUDE_DIRS "${COMMON_INCLUDE_DIRS}" CACHE INTERNAL "For out-of-tree llmOnEdge targets")
 
 add_library(commonLibraryExt INTERFACE)
 target_link_libraries(commonLibraryExt INTERFACE ${NVINFER_LIB} ${CUDART_LIB})
@@ -180,15 +185,14 @@ if(BUILD_UNIT_TESTS)
   set(BUILD_GMOCK
       OFF
       CACHE BOOL "Disable Google Mock")
-  add_subdirectory(${CMAKE_SOURCE_DIR}/3rdParty/googletest)
-  file(GLOB_RECURSE UNIT_TESTS_SRCS ${CMAKE_SOURCE_DIR}/unittests/*.cpp
-       ${CMAKE_SOURCE_DIR}/unittests/*.cu)
+  add_subdirectory(${TRT_EDGELLM_ROOT}/3rdParty/googletest)
+  file(GLOB_RECURSE UNIT_TESTS_SRCS ${TRT_EDGELLM_ROOT}/unittests/*.cpp
+       ${TRT_EDGELLM_ROOT}/unittests/*.cu)
   add_executable(unitTest ${UNIT_TESTS_SRCS})
   target_include_directories(unitTest PRIVATE ${COMMON_INCLUDE_DIRS}
-                                              ${CMAKE_SOURCE_DIR})
-  # Define project root path for tests to access resources
+                                              ${TRT_EDGELLM_ROOT})
   target_compile_definitions(unitTest
-                             PRIVATE PROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}")
+                             PRIVATE PROJECT_ROOT_DIR="${TRT_EDGELLM_ROOT}")
   target_link_libraries(unitTest PRIVATE gtest gtest_main edgellmCore
                                          ${CUDART_LIB} ${CUDA_DRIVER_LIB})
   add_cross_build_link_options(unitTest)

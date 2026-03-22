@@ -21,12 +21,12 @@ target_link_libraries(llm_inference PRIVATE edgellmCore edgellmTokenizer
                                             exampleUtils commonLibraryExt)
 target_include_directories(
   llm_inference PRIVATE ${COMMON_INCLUDE_DIRS}
-                        ${CMAKE_SOURCE_DIR}/examples/utils)
+                        ${TRT_EDGELLM_ROOT}/examples/utils)
 add_cross_build_link_options(llm_inference)
 
 add_executable(llm_bench llm_bench.cpp)
 target_link_libraries(llm_bench PRIVATE commonLibraryExt edgellmCore
                                         exampleUtils)
 target_include_directories(llm_bench PRIVATE ${COMMON_INCLUDE_DIRS}
-                                             ${CMAKE_SOURCE_DIR}/examples/utils)
+                                             ${TRT_EDGELLM_ROOT}/examples/utils)
 add_cross_build_link_options(llm_bench)

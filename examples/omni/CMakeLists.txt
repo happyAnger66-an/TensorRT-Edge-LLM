@@ -7,7 +7,7 @@ add_executable(qwen3_tts_inference qwen3_tts_inference.cpp)
 
 target_include_directories(
   qwen3_tts_inference PRIVATE ${COMMON_INCLUDE_DIRS}
-                              ${CMAKE_SOURCE_DIR}/examples/utils)
+                              ${TRT_EDGELLM_ROOT}/examples/utils)
 
 target_link_libraries(qwen3_tts_inference PRIVATE edgellmCore edgellmTokenizer
                                                   exampleUtils commonLibraryExt)

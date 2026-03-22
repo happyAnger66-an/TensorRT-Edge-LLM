@@ -42,10 +42,10 @@ function(cute_dsl_fmha_setup)
   file(MAKE_DIRECTORY "${CUTE_DSL_FMHA_OUTPUT_DIR}")
 
   set(CUTE_DSL_FMHA_SCRIPT
-      "${CMAKE_SOURCE_DIR}/kernelSrcs/fmha_cutedsl_blackwell/fmha.py")
+      "${TRT_EDGELLM_ROOT}/kernelSrcs/fmha_cutedsl_blackwell/fmha.py")
   set(CUTE_DSL_FMHA_DEPENDS
       ${CUTE_DSL_FMHA_SCRIPT}
-      ${CMAKE_SOURCE_DIR}/kernelSrcs/fmha_cutedsl_blackwell/fmha_helpers.py)
+      ${TRT_EDGELLM_ROOT}/kernelSrcs/fmha_cutedsl_blackwell/fmha_helpers.py)
   set(CUTE_DSL_FMHA_LLM_FLAGS
       --is_causal --is_persistent --export_only --bottom_right_align
       --output_dir ${CUTE_DSL_FMHA_OUTPUT_DIR})
@@ -74,7 +74,7 @@ function(cute_dsl_fmha_setup)
         ${Q_SHAPE} --k_shape ${K_SHAPE} --file_name ${NAME} --function_prefix
         ${NAME} ${_EXTRA_FLAGS}
       DEPENDS ${CUTE_DSL_FMHA_DEPENDS}
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/kernelSrcs/fmha_cutedsl_blackwell
+      WORKING_DIRECTORY ${TRT_EDGELLM_ROOT}/kernelSrcs/fmha_cutedsl_blackwell
       COMMENT "Compiling CuTe DSL FMHA kernel (${NAME})...")
 
     # Store OBJ path for linking (macro shares caller's scope)

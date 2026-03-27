@@ -19,6 +19,8 @@
 
 #include "cuteDSLArtifact/fmha_d128.h"
 #include "cuteDSLArtifact/fmha_d128_sw.h"
+#include "cuteDSLArtifact/fmha_d256.h"
+#include "cuteDSLArtifact/fmha_d256_sw.h"
 #include "cuteDSLArtifact/fmha_d64.h"
 #include "cuteDSLArtifact/fmha_d64_sw.h"
 #include "cuteDSLArtifact/vit_fmha_d128.h"
@@ -109,8 +111,10 @@ private:
     // LLM kernel modules
     static fmha_d64_Kernel_Module_t sLLM_d64;
     static fmha_d128_Kernel_Module_t sLLM_d128;
+    static fmha_d256_Kernel_Module_t sLLM_d256;
     static fmha_d64_sw_Kernel_Module_t sLLM_d64_sw;
     static fmha_d128_sw_Kernel_Module_t sLLM_d128_sw;
+    static fmha_d256_sw_Kernel_Module_t sLLM_d256_sw;
     static bool sLLMLoaded;
     static std::mutex sLLMMutex;
 

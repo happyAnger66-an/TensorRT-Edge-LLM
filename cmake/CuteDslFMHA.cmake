@@ -85,9 +85,13 @@ function(cute_dsl_fmha_setup)
   _add_fmha_variant(fmha_d64 1,1024,14,64 1,1024,1,64 CUTE_DSL_FMHA_LLM_FLAGS)
   _add_fmha_variant(fmha_d128 1,1024,14,128 1,1024,1,128
                     CUTE_DSL_FMHA_LLM_FLAGS)
+  _add_fmha_variant(fmha_d256 1,1024,14,256 1,1024,1,256
+                    CUTE_DSL_FMHA_LLM_FLAGS)
   _add_fmha_variant(fmha_d64_sw 1,1024,14,64 1,1024,1,64
                     CUTE_DSL_FMHA_LLM_FLAGS --window_size 4096,-1)
   _add_fmha_variant(fmha_d128_sw 1,1024,14,128 1,1024,1,128
+                    CUTE_DSL_FMHA_LLM_FLAGS --window_size 4096,-1)
+  _add_fmha_variant(fmha_d256_sw 1,1024,14,256 1,1024,1,256
                     CUTE_DSL_FMHA_LLM_FLAGS --window_size 4096,-1)
 
   # ViT variants: non-causal, packed varlen, separate Q/K/V
@@ -131,8 +135,10 @@ function(cute_dsl_fmha_setup)
       ${ARG_PLUGIN_TARGET}
       ${CUTE_DSL_FMHA_fmha_d64_OBJ}
       ${CUTE_DSL_FMHA_fmha_d128_OBJ}
+      ${CUTE_DSL_FMHA_fmha_d256_OBJ}
       ${CUTE_DSL_FMHA_fmha_d64_sw_OBJ}
       ${CUTE_DSL_FMHA_fmha_d128_sw_OBJ}
+      ${CUTE_DSL_FMHA_fmha_d256_sw_OBJ}
       ${CUTE_DSL_FMHA_vit_fmha_d64_OBJ}
       ${CUTE_DSL_FMHA_vit_fmha_d72_OBJ}
       ${CUTE_DSL_FMHA_vit_fmha_d80_OBJ}

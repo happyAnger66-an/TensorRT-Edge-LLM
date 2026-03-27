@@ -27,14 +27,16 @@ Local modifications are captured in `fmha.patch`.
 
 ## 1. Kernel Variants
 
-The build produces eight AOT-compiled kernel objects (`.o` + `.h` pairs):
+The build produces ten AOT-compiled kernel objects (`.o` + `.h` pairs):
 
 | Variant | Head Dim | SWA | Mode | Causal |
 |---|---|---|---|---|
 | `fmha_d64` | 64 | No | LLM | Yes |
 | `fmha_d128` | 128 | No | LLM | Yes |
+| `fmha_d256` | 256 | No | LLM | Yes |
 | `fmha_d64_sw` | 64 | Yes | LLM | Yes |
 | `fmha_d128_sw` | 128 | Yes | LLM | Yes |
+| `fmha_d256_sw` | 256 | Yes | LLM | Yes |
 | `vit_fmha_d64` | 64 | No | ViT | No |
 | `vit_fmha_d72` | 72 | No | ViT | No |
 | `vit_fmha_d80` | 80 | No | ViT | No |
@@ -73,7 +75,7 @@ cmake -DENABLE_CUTE_DSL_FMHA=ON \
 The `CuteDslFMHA.cmake` module:
 
 1. Verifies / installs `nvidia-cutlass-dsl` and `cupy` pip packages.
-2. Invokes `fmha.py` eight times (one per variant) with `--export_only` to produce
+2. Invokes `fmha.py` ten times (one per variant) with `--export_only` to produce
    `.o` and `.h` artifacts under `cpp/kernels/contextAttentionKernels/cuteDSLArtifact/`.
 3. Links the `.o` files and `cute_dsl_runtime` library into the plugin shared
    library.
@@ -98,6 +100,12 @@ python3 fmha.py \
   --is_causal --is_persistent --bottom_right_align \
   --window_size 4096,-1 \
   --export_only --output_dir ./out --file_name fmha_d64_sw --function_prefix fmha_d64_sw
+
+# LLM d256, no sliding window
+python3 fmha.py \
+  --q_shape 1,1024,14,256 --k_shape 1,1024,1,256 \
+  --is_causal --is_persistent --bottom_right_align \
+  --export_only --output_dir ./out --file_name fmha_d256 --function_prefix fmha_d256
 
 # ViT d64
 python3 fmha.py \
@@ -133,9 +141,9 @@ provides the C++ interface:
 - **Module loading**: `loadLLMKernelModule()` / `loadViTKernelModule()` — loads
   the AOT-compiled CUDA libraries. Thread-safe (static, guarded by mutex).
 - **Dispatch**: `canImplement(headSize, smVersion)` — returns `true` for
-  SM >= 100 and head dim 64 or 128.
+  SM >= 100 and head dim 64 / 128 / 256.
 - **LLM run**: `run(qPtr, kvPtr, oPtr, cuKVSeqLens, stream, slidingWindowSize)`
-  — dispatches to the appropriate d64/d128 + SWA/non-SWA variant.
+  — dispatches to the appropriate d64/d128/d256 + SWA/non-SWA variant.
 - **ViT run**: `run(qPtr, kPtr, vPtr, oPtr, cuSeqLens, totalSeqLen, maxSeqLen, batchSize, stream)`
   — dispatches to the appropriate d64/d72/d80/d128 variant.
 

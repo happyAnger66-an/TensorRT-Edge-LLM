@@ -201,14 +201,22 @@ AttentionPlugin::AttentionPlugin(std::string const& name, int32_t numQHeads, int
         }
     }
 
-    // XQA decode kernels are always needed regardless of FMHA path.
-    bool const useSpecDecode = static_cast<bool>(mEnableTreeAttention);
-    bool canImplementXQA = DecoderXQARunner::canImplement(
-        mNumQHeads, mNumKVHeads, mSMVersion, mDataType, selectKvCacheDataType(mEnableFp8KVCache));
-    if (canImplementXQA)
+    // Prefill-only head_size=256 support: skip decode-kernel requirement at construction.
+    // Decode/tree-decode with head_size=256 is explicitly rejected in enqueue().
+    bool const prefillOnlyHeadSize256 = (mHeadSize == 256);
+
+    // XQA decode kernels are still required for all non-prefill-only configurations.
+    bool canImplementXQA = true;
+    if (!prefillOnlyHeadSize256)
     {
-        DecoderXQARunner::loadDecodeXQAKernels(
-            mSMVersion, mDataType, selectKvCacheDataType(mEnableFp8KVCache), useSpecDecode);
+        bool const useSpecDecode = static_cast<bool>(mEnableTreeAttention);
+        canImplementXQA = DecoderXQARunner::canImplement(
+            mNumQHeads, mNumKVHeads, mSMVersion, mDataType, selectKvCacheDataType(mEnableFp8KVCache));
+        if (canImplementXQA)
+        {
+            DecoderXQARunner::loadDecodeXQAKernels(
+                mSMVersion, mDataType, selectKvCacheDataType(mEnableFp8KVCache), useSpecDecode);
+        }
     }
 
     if (!canImplementFMHA || !canImplementXQA)
@@ -789,6 +797,13 @@ int32_t AttentionPlugin::enqueue(nvinfer1::PluginTensorDesc const* inputDesc,
     }
     else
     {
+        if (mHeadSize == 256)
+        {
+            LOG_ERROR(
+                "head_size=256 currently supports prefill/chunked-prefill only; decode/tree-decode is not implemented.");
+            return 1;
+        }
+
         // Prepare Decoding attention runner parameter to dispatch kernel
         if (executionMode == AttentionExecutionMode::kTREE_DECODING)
         {

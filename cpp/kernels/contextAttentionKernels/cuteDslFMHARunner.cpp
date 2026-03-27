@@ -34,8 +34,10 @@ namespace trt_edgellm
 // LLM
 fmha_d64_Kernel_Module_t CuteDslFMHARunner::sLLM_d64 = {};
 fmha_d128_Kernel_Module_t CuteDslFMHARunner::sLLM_d128 = {};
+fmha_d256_Kernel_Module_t CuteDslFMHARunner::sLLM_d256 = {};
 fmha_d64_sw_Kernel_Module_t CuteDslFMHARunner::sLLM_d64_sw = {};
 fmha_d128_sw_Kernel_Module_t CuteDslFMHARunner::sLLM_d128_sw = {};
+fmha_d256_sw_Kernel_Module_t CuteDslFMHARunner::sLLM_d256_sw = {};
 bool CuteDslFMHARunner::sLLMLoaded = false;
 std::mutex CuteDslFMHARunner::sLLMMutex;
 
@@ -62,8 +64,10 @@ bool CuteDslFMHARunner::loadLLMKernelModule()
     {
         fmha_d64_Kernel_Module_Load(&sLLM_d64);
         fmha_d128_Kernel_Module_Load(&sLLM_d128);
+        fmha_d256_Kernel_Module_Load(&sLLM_d256);
         fmha_d64_sw_Kernel_Module_Load(&sLLM_d64_sw);
         fmha_d128_sw_Kernel_Module_Load(&sLLM_d128_sw);
+        fmha_d256_sw_Kernel_Module_Load(&sLLM_d256_sw);
         sLLMLoaded = true;
         LOG_DEBUG("CuTe DSL LLM FMHA kernel modules loaded");
         return true;
@@ -82,8 +86,10 @@ void CuteDslFMHARunner::unloadLLMKernelModule()
     {
         fmha_d64_Kernel_Module_Unload(&sLLM_d64);
         fmha_d128_Kernel_Module_Unload(&sLLM_d128);
+        fmha_d256_Kernel_Module_Unload(&sLLM_d256);
         fmha_d64_sw_Kernel_Module_Unload(&sLLM_d64_sw);
         fmha_d128_sw_Kernel_Module_Unload(&sLLM_d128_sw);
+        fmha_d256_sw_Kernel_Module_Unload(&sLLM_d256_sw);
         sLLMLoaded = false;
     }
 }
@@ -127,7 +133,7 @@ void CuteDslFMHARunner::unloadViTKernelModule()
 
 bool CuteDslFMHARunner::canImplement(int32_t headSize, int32_t smVersion)
 {
-    return (smVersion >= 100) && (headSize == 64 || headSize == 128);
+    return (smVersion >= 100) && (headSize == 64 || headSize == 128 || headSize == 256);
 }
 
 bool CuteDslFMHARunner::canImplementViT(int32_t headSize, int32_t smVersion)
@@ -246,6 +252,17 @@ void CuteDslFMHARunner::run(void const* qPtr, void const* kvPtr, void* oPtr, int
         else
         {
             CALL_LLM_FMHA(fmha_d128, sLLM_d128, windowSizeLeft);
+        }
+    }
+    else if (headDim == 256)
+    {
+        if (useSlidingWindow)
+        {
+            CALL_LLM_FMHA(fmha_d256_sw, sLLM_d256_sw, windowSizeLeft);
+        }
+        else
+        {
+            CALL_LLM_FMHA(fmha_d256, sLLM_d256, windowSizeLeft);
         }
     }
     else

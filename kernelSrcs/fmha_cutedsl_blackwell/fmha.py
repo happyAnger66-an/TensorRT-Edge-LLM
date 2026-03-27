@@ -92,7 +92,7 @@ To collect performance with NCU profiler:
       --iterations 10 --skip_ref_check
 
 Constraints for this example:
-* Supported head dimensions: 32, 64, and 128
+* Supported head dimensions: 32, 64, 128, and 256
 * Number of heads in Q must be divisible by number of heads in K
 * mma_tiler_mn must be 128,128
 * Batch size must be the same for Q, K, and V tensors
@@ -2722,8 +2722,8 @@ def run(
     if d != d_:
         raise ValueError("q & k must have the same head dimension")
 
-    # if d not in {32, 64, 128}:
-    #     raise ValueError("head dimension must be 32, 64, or 128")
+    # if d not in {32, 64, 128, 256}:
+    #     raise ValueError("head dimension must be 32, 64, 128, or 256")
 
     if h_q % h_k != 0:
         raise ValueError("h_q must be divisible by h_k")
